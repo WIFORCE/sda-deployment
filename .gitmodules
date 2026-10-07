@@ -1,9 +1,3 @@
-[submodule "starter-kit-lsaai-mock"]
-	path = starter-kit-lsaai-mock
-	url = https://github.com/GenomicDataInfrastructure/starter-kit-lsaai-mock
-[submodule "starter-kit-rems"]
-	path = starter-kit-rems
-	url = https://github.com/GenomicDataInfrastructure/starter-kit-rems
-[submodule "starter-kit-storage-and-interfaces"]
-	path = starter-kit-storage-and-interfaces
-	url = https://github.com/GenomicDataInfrastructure/starter-kit-storage-and-interfaces.git
+[submodule "sensitive-data-archive"]
+	path = sensitive-data-archive
+	url = https://github.com/neicnordic/sensitive-data-archive/
