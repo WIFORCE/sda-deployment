@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>sda-s3-integration.yml — dependency diagram</title>
+    <style>
+        body {
+            font-family: -apple-system, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #fdfdfd;
+            color: #1f2328;
+        }
+
+        h1 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 4px;
+        }
+
+        p.sub {
+            margin: 0 0 16px;
+            color: #57606a;
+            font-size: 12px;
+        }
+
+        .link {
+            fill: none;
+        }
+
+        .legend-item {
+            font-size: 12px;
+        }
+
+        svg text {
+            fill: #1f2328;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>sda-s3-integration.yml — service &amp; config dependency diagram</h1>
+    <p class="sub">Nodes grouped by category around the circle. Hover a node to highlight its outgoing (blue) and
+        incoming (pink) edges. Includes bind-mounted configuration files.</p>
+    <div id="chart"></div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Source of truth: depends_on edges + volume bind-mounts from sda-s3-integration.yml
+        // image/port are shown on the label; PR${PR_NUMBER} is the local tag built by `make build-sda`.
+        const sdaImage = "SDA";
+        const data = {
+            "SDA Internal network": [
+                { name: "postgres", imports: [], image: sdaImage + "-postgres", port: "15432" },
+                { name: "ingest", imports: ["credentials", "s3", "postgres", "rabbitmq", "config.yaml"], image: sdaImage },
+                { name: "verify", imports: ["credentials", "s3", "postgres", "rabbitmq", "config.yaml"], image: sdaImage },
+                { name: "finalize", imports: ["credentials", "s3", "postgres", "rabbitmq", "config.yaml"], image: sdaImage },
+                { name: "mapper", imports: ["credentials", "s3", "postgres", "rabbitmq", "config.yaml"], image: sdaImage },
+                { name: "reencrypt", imports: ["credentials", "config.yaml"], image: sdaImage, port: "50051" },
+                { name: "rotatekey", imports: ["credentials", "postgres", "rabbitmq", "config.yaml"], image: sdaImage },
+            ],
+            "SDA External network": [
+                { name: "auth-cega", imports: ["cega-nss", "postgres", "config.yaml"], image: sdaImage, port: "8888" },
+                { name: "auth-aai", imports: ["credentials", "mock-aai", "config.yaml"], image: sdaImage, port: "8801" },
+                { name: "auth-aai-mfa", imports: ["credentials", "mock-aai", "config.yaml"], image: sdaImage, port: "8802" },
+                { name: "download", imports: ["credentials", "postgres", "reencrypt", "mock-aai", "s3", "download-config-s3.yaml"], image: sdaImage, port: "8085" },
+                { name: "s3inbox", imports: ["credentials", "s3", "mock-aai", "postgres", "rabbitmq", "config.yaml"], image: sdaImage, port: "18000, 18001" },
+                { name: "rabbitmq", imports: [], image: sdaImage + "-rabbitmq", port: "15672, 5672" },
+                { name: "api", imports: ["credentials", "postgres", "mock-aai", "rabbitmq", "config.yaml", "rbac.json"], image: sdaImage, port: "8090" },
+            ],
+
+            "S3": [
+                { name: "s3", imports: [], image: "quay.io/ceph/vstart-cluster:19.2.6", port: "19000" },
+            ],
+            "AAI": [
+                { name: "cega-nss", imports: ["credentials", "users.py"], image: "egarchive/lega-base:release.v0.2.0", port: "8443" },
+                { name: "mock-aai", imports: ["aai-db"], image: "harbor.nbis.se/test/ls_aai_mock:2.5.3", port: "8800" },
+                { name: "aai-db", imports: ["aai-mock.sql"], image: "mysql/mysql-server:latest" },
+            ],
+            // "Test": [
+            //     { name: "integration_test", imports: ["auth-cega", "auth-aai", "auth-aai-mfa", "cega-nss", "credentials", "finalize", "ingest", "mapper", "s3inbox", "verify", "api", "reencrypt", "rotatekey", "download"], image: "python:3.13-slim-trixie" }
+            //     { name: "credentials", imports: ["postgres", "rabbitmq", "make_sda_credentials.sh"], image: "python:3.13-slim-trixie" }
+            // ],
+            "Config": [
+                { name: "config.yaml", imports: [] },
+                { name: "download-config-s3.yaml", imports: [] },
+                { name: "rbac.json", imports: [] },
+                { name: "users.py", imports: [] },
+                { name: "aai-mock.sql", imports: [] },
+                // { name: "make_sda_credentials.sh", imports: [] }
+            ]
+        };
+
+        const color = d3.scaleOrdinal()
+            .domain(Object.keys(data))
+            .range(d3.schemeCategory10);
+
+        const width = 720;
+        const radius = width / 2 - 140;
+
+        function bilink(root) {
+            const map = new Map(root.leaves().map(d => [d.data.name, d]));
+            for (const d of root.leaves()) {
+                d.incoming = [];
+                d.outgoing = (d.data.imports || []).map(i => [d, map.get(i)]);
+            }
+            for (const d of root.leaves()) {
+                for (const o of d.outgoing) {
+                    // push the same tuple reference so .path (set later) is visible from both sides
+                    if (o[1]) o[1].incoming.push(o);
+                }
+            }
+            return root;
+        }
+
+        const hierarchyData = {
+            name: "root",
+            children: Object.entries(data).map(([category, items]) => ({ name: category, children: items }))
+        };
+
+        const tree = d3.cluster().size([2 * Math.PI, radius]);
+
+        const root = tree(bilink(d3.hierarchy(hierarchyData)
+            .sort((a, b) => d3.ascending(a.height, b.height) || d3.ascending(a.data.name, b.data.name))));
+
+        const line = d3.lineRadial()
+            .curve(d3.curveBundle.beta(0.85))
+            .radius(d => d.y)
+            .angle(d => d.x);
+
+        const svg = d3.select("#chart").append("svg")
+            .attr("viewBox", [-width / 2 - 60, -width / 2 - 60, width + 120, width + 120])
+            .attr("width", width + 120)
+            .attr("height", width + 120)
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10);
+
+        const linkGroup = svg.append("g")
+            .attr("stroke", "#b1bac4")
+            .attr("stroke-opacity", 0.6)
+            .attr("fill", "none");
+
+        const link = linkGroup.selectAll("path")
+            .data(root.leaves().flatMap(leaf => leaf.outgoing))
+            .join("path")
+            .style("mix-blend-mode", "multiply")
+            .attr("d", ([i, o]) => o ? line(i.path(o)) : null)
+            .each(function (d) { d.path = this; });
+
+        const node = svg.append("g")
+            .selectAll("g")
+            .data(root.leaves())
+            .join("g")
+            .attr("transform", d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`);
+
+        node.append("circle")
+            .attr("r", 3.5)
+            .attr("fill", d => color(d.parent.data.name));
+
+        node.append("text")
+            .attr("dy", "0.31em")
+            .attr("x", d => d.x < Math.PI ? 9 : -9)
+            .attr("text-anchor", d => d.x < Math.PI ? "start" : "end")
+            .attr("transform", d => d.x >= Math.PI ? "rotate(180)" : null)
+            .each(function (d) {
+                d.text = this;
+                const t = d3.select(this);
+                d.nameTspan = t.append("tspan")
+                    .attr("font-weight", 700)
+                    .attr("fill", color(d.parent.data.name))
+                    .text(d.data.name)
+                    .node();
+                if (d.data.image) {
+                    t.append("tspan")
+                        .attr("x", d.x < Math.PI ? 9 : -9)
+                        .attr("dy", "1.1em")
+                        .attr("font-style", "italic")
+                        .attr("fill", "#8b949e")
+                        .text(d.data.image);
+                }
+                if (d.data.port) {
+                    t.append("tspan")
+                        .attr("x", d.x < Math.PI ? 9 : -9)
+                        .attr("dy", "1.1em")
+                        .attr("fill", "#6e7681")
+                        .text("port " + d.data.port);
+                }
+            })
+            .on("mouseover", overed)
+            .on("mouseout", outed)
+            .call(text => text.append("title")
+                .text(d => `${d.data.name}\n${d.outgoing.filter(([, o]) => o).length} outgoing\n${d.incoming.length} incoming`));
+
+        function overed(event, d) {
+            link.style("mix-blend-mode", null);
+            d3.selectAll(d.incoming.map(o => o.path)).attr("stroke", "#f778ba").attr("stroke-opacity", 1).raise();
+            d3.selectAll(d.incoming.map(([s]) => s.nameTspan)).attr("fill", "#f778ba");
+            d3.selectAll(d.outgoing.map(o => o.path)).attr("stroke", "#58a6ff").attr("stroke-opacity", 1).raise();
+            d3.selectAll(d.outgoing.map(([, t]) => t && t.nameTspan).filter(Boolean)).attr("fill", "#58a6ff");
+        }
+
+        function outed(event, d) {
+            link.style("mix-blend-mode", "multiply");
+            d3.selectAll(d.incoming.map(o => o.path)).attr("stroke", null).attr("stroke-opacity", null);
+            d3.selectAll(d.incoming.map(([s]) => s.nameTspan)).attr("fill", d2 => color(d2.parent.data.name));
+            d3.selectAll(d.outgoing.map(o => o.path)).attr("stroke", null).attr("stroke-opacity", null);
+            d3.selectAll(d.outgoing.map(([, t]) => t && t.nameTspan).filter(Boolean)).attr("fill", d2 => color(d2.parent.data.name));
+        }
+
+        // Legend
+        const legend = svg.append("g").attr("transform", `translate(${-width / 2 - 20}, ${-width / 2 - 20})`);
+        const categories = Object.keys(data);
+        legend.selectAll("circle")
+            .data(categories)
+            .join("circle")
+            .attr("cx", 6)
+            .attr("cy", (d, i) => i * 18)
+            .attr("r", 5)
+            .attr("fill", d => color(d));
+        legend.selectAll("text")
+            .data(categories)
+            .join("text")
+            .attr("class", "legend-item")
+            .attr("x", 16)
+            .attr("y", (d, i) => i * 18 + 4)
+            .text(d => d);
+    </script>
+</body>
+
+</html>

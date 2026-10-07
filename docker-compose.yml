@@ -1,20 +1,6 @@
 include:
   - path:
-      - starter-kit-lsaai-mock/docker-compose.yaml
-      - lsaai-mock.override.yml
-    project_directory: starter-kit-lsaai-mock
-    # env_file: 
-
-  - path:
-    - starter-kit-rems/docker-compose.yml
-    - rems.override.yml
-
-  - path:
-    - starter-kit-storage-and-interfaces/docker-compose.yml
-    - sda.override.yml
-    project_directory: starter-kit-storage-and-interfaces
+      - sensitive-data-archive/.github/integration/sda-s3-integration.yml
+    project_directory: sensitive-data-archive/.github/integration
     env_file:
-      - ../configuration/sda/.env
-
-networks:
-  #for all services
+      - configuration/sensitive-data-archive/.env
