@@ -1,0 +1,8 @@
+client-name: "REMS"
+client-id: "rems-client"
+client-secret: "rems-secret"
+redirect-uris: ["http://localhost:3000/oidc-callback"]
+token-endpoint-auth-method: "client_secret_basic"
+scope: ["openid", "profile", "email", "ga4gh_passport_v1"]
+grant-types: ["authorization_code"]
+post-logout-redirect-uris: ["http://localhost:3000/post-logout"]

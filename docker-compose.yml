@@ -1,6 +1,7 @@
 include:
   - path:
       - sensitive-data-archive/.github/integration/sda-s3-integration.yml
+      - sensitive-data-archive.override.yml
     project_directory: sensitive-data-archive/.github/integration
     env_file:
       - configuration/sensitive-data-archive/.env

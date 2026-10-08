@@ -1,0 +1,26 @@
+services:
+  # Merge the configuration from the submodule with the local overrides in a scratch named volume
+  aai-mock-config-init:
+    image: alpine:3.20
+    volumes:
+      - ./sda/aai-mock:/base:ro          # submodule's own config
+      - ../../../configuration/aai-mock:/override:ro     # overrides only
+      - aai-mock-config:/out
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        cp -a /base/. /out/
+        cp -a /override/. /out/
+    restart: "no"
+
+  mock-aai:
+    depends_on:
+      aai-mock-config-init:
+        condition: service_completed_successfully
+    volumes:
+      - aai-mock-config:/etc/lsaai-mock
+
+volumes:
+  aai-mock-config:

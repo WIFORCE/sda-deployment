@@ -19,6 +19,8 @@ services:
         condition: service_completed_successfully
       mock-aai:
         condition: service_healthy
+    extra_hosts:
+      - "localhost:host-gateway"
 
     volumes:
       - ../configuration/rems/config.edn:/rems/config/config.edn
