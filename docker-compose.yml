@@ -4,3 +4,8 @@ include:
     project_directory: sensitive-data-archive/.github/integration
     env_file:
       - configuration/sensitive-data-archive/.env
+
+  - path:
+      - rems/docker-compose-config.yml
+      - rems.override.yml
+    project_directory: rems

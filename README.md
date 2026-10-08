@@ -6,10 +6,13 @@ We had a breaking change, instead of relying on the starter-kit repositories, we
 
 Modifications applied by this repository
 ---
-1. Add sensitive-data-archive
-   1. Include the repository with `git submodule add ...`
-   2. Created a docker-compose.yml that includes the sda compose configuration
-   3. Created a configuration/sensitive-data-archive/.env that specifies the version of SDA to use
+1. Add the dependencies to SDA and REMS with `git submodule add ...`. Include the submodule docker compose files in docker-compose.yml.
+2. SDA
+   * Created a configuration/sensitive-data-archive/.env that specifies the version of SDA to use
+3. REMS
+   * Move the initialization of the database in a service instead of the imperative `docker-compose run --rm -e CMD="migrate" app`
+   * Created a configuration/rems/config.edn
+      * Changes the authentication from `fake` to `oidc`.
 
 Diagram
 ---
@@ -17,5 +20,8 @@ Diagram
 
 Troubleshooting wiki
 ---
+* Compiling the SDA image
+  * Should we run the build-all command?
+  * Or should we replace the image parameter from PR${PR_NUMBER} to ${PR_NUMBER} so we can use "v4.0.2" ?
 * 
 

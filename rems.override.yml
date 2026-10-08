@@ -1,0 +1,25 @@
+services:
+
+  # Initialise the database, replaces: docker-compose run --rm -e CMD="migrate" app
+  rems-migrate:
+    extends:
+      file: ./docker-compose.yml
+      service: app
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      - CMD=migrate
+    ports: []
+    restart: "no"
+ 
+  app:
+    depends_on:
+      rems-migrate:
+        condition: service_completed_successfully
+      mock-aai:
+        condition: service_healthy
+
+    volumes:
+      - ../configuration/rems/config.edn:/rems/config/config.edn
+

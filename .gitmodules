@@ -1,3 +1,6 @@
 [submodule "sensitive-data-archive"]
 	path = sensitive-data-archive
 	url = https://github.com/neicnordic/sensitive-data-archive/
+[submodule "rems"]
+	path = rems
+	url = https://github.com/CSCfi/rems
