@@ -15,9 +15,31 @@ Modifications applied by this repository
    * Created a [config.edn](configuration/rems/config.edn) with `oidc` authentication instead of `fake`.
    * Add `extra_hosts: "localhost:host-gateway"`  for the service `app` so it can reach `lsaai-mock`. 
 
-Diagram
+Components
 ---
 [sda-s3-dependency-diagram.html](figs/sda-s3-dependency-diagram.html)
+
+* External facing components
+   * s3inbox: SFTP, S3 or HTTPS server, acting as a dropbox, where user credentials are fetched from CentralEGA or via Life Science AAI. s3inbox or sftp-inbox
+   * rabbitmq: A (local) RabbitMQ message broker with appropriate accounts, exchanges, queues and bindings, connected to the CentralEGA counter-part.
+   * download: Provides a download/data access API for streaming (decrypted) archived data - source at: https://github.com/neicnordic/sensitive-data-archive
+   * auth-cega: ?
+   * auth-aai-mfa: ?
+   * auth-aai: ?
+   * api: Provides a download/data access API for streaming archived data either in encrypted or decrypted format - source at: https://github.com/neicnordic/sda-doa
+* Internal components
+   * Verify: Decrypt the stored files and checksum them against their embedded checksum.
+   * rotatekey: ?
+   * reencrypt: ?
+   * postgres: A Postgres database with appropriate schemas and isolations
+   * mapper: The mapper service register mapping of accessionIDs (IDs for files) to datasetIDs.
+   * ingest: Split the Crypt4GH header and move the remainder to the storage backend. No cryptographic task, nor access to the decryption keys.
+   * finalize: Handle the so-called Accession ID to filename mappings from CentralEGA.
+* Other components from the docmentation
+   * intercept: the intercept service relays message between the queue provided from the federated service and local queues. (Required for Federated EGA use case)
+   * archive: (this might be s3): Storage backend: as a regular file system or as a S3 object store.
+   * orchestrate:	Component that automates ingestion in stand-alone deployments of SDA Pipeline https://github.com/neicnordic/sda-orchestration
+
 
 Using the stack
 ---
@@ -63,7 +85,11 @@ Where to find the documentation
       * Documentation at http://localhost:3000/swagger-ui.
       * The API can be used to populate REMS through code. This can be used, instead of doing the work manually on the administrative section of the website, by writing a script in Python. A script is better as it prevents manual mistakes, reduces the number of owner accounts, enables versioning of the state in a git repository, and increases portability as the script can also be used to connect to other services (e.g. for compute allocation).
       * However, one has to maintain a state for the script, e.g., to know if the automation has already been performed or not. It is possible to use the "notes" associated with each entity (e.g., entitlement, ressource, or organization) to flag if the script should perform any action or not.
-      * However, one has to be notified to know when REMS data has changed and an action should be performed. This can be done by running a script in a loop, e.g. every five minutes.
+      * However, one has to be notified to know when REMS data has changed and an action should be performed. This can be done by running a script in a loop, e.g. every five minutes. 
+* SDA
+   * [sensitive-data-archive/README.md](sensitive-data-archive/README.md) and [sensitive-data-archive/DEVELOPMENT.md](sensitive-data-archive/DEVELOPMENT.md): High-level informations
+   * [https://github.com/neicnordic/neic-sda](https://github.com/neicnordic/neic-sda) or compiled at [https://neic-sda.readthedocs.io/en/latest/](https://neic-sda.readthedocs.io/en/latest/): Documentation
+      * 
    
 
 
