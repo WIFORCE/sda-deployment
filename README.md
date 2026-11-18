@@ -76,6 +76,41 @@ Where to find the documentation
          * Security concerns: 
             * it is possible to steal someone's passport and impersonate them. E.g., one attacker can create a rogue passport clearing house by hosting SDA, receive passports from users wanting access, and use these passport to access data on other clearing houses.
             * One solution to prevent these attacks is to bind passport access tokens to a specific clearing house. I.e., the entitlement is for a ressource at a location, and only this location.
+      * [The GA4GH Passport specification](https://github.com/ga4gh-duri/ga4gh-duri.github.io/blob/master/researcher_ids/ga4gh_passport_v1.md#example-passport-claim)
+        * Content of a passport:
+         ```json
+         "ga4gh_passport_v1" : [ // a passport contains an array of visas
+            "<eyJhbGciOiJI...aaa>", // a visa is a signed JWTs encoded intro strings using JWS Compact serialization
+            "<eyJhbGciOiJI...bbb>"
+            ]
+         ```
+
+         * Content of a visa: as a JSON Web Token (JWT), it is a standard format containing a header, payload, and signature
+         ```json
+         { // header containing ?
+            ["typ": "vnd.ga4gh.visa+jwt | at+jwt | JWT",] // media type of the JWT. the value specifies that it's a GA4GH visa.
+            "alg": "<signing-algorithm>", // algorithm specified by AAI
+            ["jku": "<json-web-keys-set-URL>",] // points to the /api/jwk url, where the public key can be fetched for verifying the visa (specified in the :public-url config variable)
+            "kid": "<signing-key-identifier>" // ?
+         }.
+         { // payload containing ?
+            "iss": "<issuer-URL>", // issuer's system (specified in the :public-url config variable)
+            "sub": "<subject-identifier>", // represent a given user (subject)
+            ["scope": "openid ...",] // ?
+            "jti": "<token-identifier>", // ?
+            "iat": <seconds-since-epoch>,  // ?
+            "exp": <seconds-since-epoch>, // expiration of the visa
+            "ga4gh_visa_v1": {
+               "type": "<visa-type>", // type fo visa claim, e.g., AffiliationAndRole, ControlledAccessGrants, or LinkedIdentities
+               "asserted": <seconds-since-epoch>, // when the Visa Assertion Source made the assertion 
+               "value": "<value-string>", // the value depends on the type of visa. E.g., for LinkedIdentities it is "<uri-encoded-sub>,<uri-encoded-iss>"
+               "source": "<source-URL>", // the organization or DAC that made the assertion
+               ["conditions": [...],] // a set of conditions under which the visa is valid
+               ["by": "<by-identifier>"] // the level or type of authority within the source organization of the assertion
+         }
+         }.
+         <signature> // issueur signature
+         ```
 
 
    * [rems/docs/Event-notification.md](rems/docs/Event-notification.md): Not used by AIDA data hub in favor of the API.
@@ -89,8 +124,6 @@ Where to find the documentation
 * SDA
    * [sensitive-data-archive/README.md](sensitive-data-archive/README.md) and [sensitive-data-archive/DEVELOPMENT.md](sensitive-data-archive/DEVELOPMENT.md): High-level informations
    * [https://github.com/neicnordic/neic-sda](https://github.com/neicnordic/neic-sda) or compiled at [https://neic-sda.readthedocs.io/en/latest/](https://neic-sda.readthedocs.io/en/latest/): Documentation
-      * 
-   
 
 
 
