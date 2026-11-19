@@ -12,16 +12,20 @@ services:
       - CMD=migrate
     ports: []
     restart: "no"
- 
+    #volumes:
+    #  - ../rems/postgresql/data:/var/lib/postgresql/data
+
+  db:
+    volumes:
+      - ../rems/postgresql/data:/var/lib/postgresql
+
   app:
     depends_on:
       rems-migrate:
         condition: service_completed_successfully
       mock-aai:
         condition: service_healthy
-    extra_hosts:
-      - "localhost:host-gateway"
-
+    ports: !override
+      - "3000:3000"
     volumes:
       - ../configuration/rems/config.edn:/rems/config/config.edn
-

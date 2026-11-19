@@ -1,7 +1,7 @@
 {:port 3000
  :database-url "postgresql://db:5432/rems?user=rems&password=remspassword"
  :search-index-path "/tmp/rems-search-index"
- :public-url "http://localhost:3000/"
+ :public-url "http://pando.upsc.se:3000/"
  :authentication :oidc
  :oidc-metadata-url "http://mock-aai:8080/oidc/.well-known/openid-configuration"
  :oidc-client-id "rems-client"
@@ -12,3 +12,4 @@
  :oidc-email-attributes ["email"]
  :log-authentication-details true
  :extra-stylesheets {:root "./" :files ["/example-theme/extra-styles.css"]}}
+ :oidc-logout-redirect-url http://pando.upsc.se:8800/oidc/endsession
