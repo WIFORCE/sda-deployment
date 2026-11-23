@@ -123,6 +123,10 @@ Where to find the documentation
       * However, one has to be notified to know when REMS data has changed and an action should be performed. This can be done by running a script in a loop, e.g. every five minutes. 
 * SDA
    * [sensitive-data-archive/README.md](sensitive-data-archive/README.md) and [sensitive-data-archive/DEVELOPMENT.md](sensitive-data-archive/DEVELOPMENT.md): High-level informations
+     * [sensitive-data-archive/sda/cmd/download/download.md](sensitive-data-archive/sda/cmd/download/download.md#GA4GH_Visa_Support): How permissions are checked against REMS visas. 
+       * permission.model (ownership, visa, or combined): Select if the user can access data if they created it, and/or if they have a visa granting access.
+       * visa.dataset-id-mode (raw or suffix): how the ControlledAccessGrants visas value are matched against the SDA datasets identifier.
+       * [sensitive-data-archive/.github/integration/sda/download-config.yaml (line 43)](sensitive-data-archive/.github/integration/sda/download-config.yaml): config example when using visas.
    * [https://github.com/neicnordic/neic-sda](https://github.com/neicnordic/neic-sda) or compiled at [https://neic-sda.readthedocs.io/en/latest/](https://neic-sda.readthedocs.io/en/latest/): Documentation
 
 
