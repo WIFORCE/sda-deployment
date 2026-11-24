@@ -1,0 +1,17 @@
+jwt:
+  pubkey-path: "/shared/keys/pub/"
+  pubkey-url: "http://mock-aai:8080/oidc/jwk"   # auth-aai passes on mock-signed tokens (AUTH_RESIGNJWT=false)
+  allow-all-data: false
+
+permission:
+  model: "combined"      # submitters keep their own data, everyone else needs a visa
+
+visa:
+  enabled: true
+  source: "userinfo"
+  userinfo-url: "http://mock-aai:8080/oidc/userinfo"
+  trusted-issuers-path: "/trusted-issuers.json"
+  dataset-id-mode: "raw"
+  allow-insecure-jku: true   # REMS serves its keys over plain HTTP
+  cache:
+    token-ttl: 300           # demo: a new approval shows within 5 minutes

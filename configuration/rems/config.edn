@@ -11,5 +11,10 @@
  :oidc-name-attributes ["name" "unique_name" "family_name"]
  :oidc-email-attributes ["email"]
  :log-authentication-details true
- :extra-stylesheets {:root "./" :files ["/example-theme/extra-styles.css"]}}
- :oidc-logout-redirect-url http://pando.upsc.se:8800/oidc/endsession
+ :extra-stylesheets {:root "./" :files ["/example-theme/extra-styles.css"]}
+ :oidc-logout-redirect-url "http://pando.upsc.se:8800/oidc/endsession"
+ :languages [:en] 
+ :enable-permissions-api true
+ :ga4gh-visa-private-key "/rems/keys/private-key.jwk"
+ :ga4gh-visa-public-key "/rems/keys/public-key.jwk"
+}

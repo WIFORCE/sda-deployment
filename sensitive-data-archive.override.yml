@@ -22,5 +22,13 @@ services:
     volumes:
       - aai-mock-config:/etc/lsaai-mock
 
+  download:
+    volumes: !override
+      - ./sda/download-config-rems.yaml:/config.yaml
+      - ./sda/trusted-issuers-rems.json:/trusted-issuers.json
+      - shared:/shared
+    extra_hosts:
+      - "localhost:host-gateway"
+      - "pando.upsc.se:host-gateway"
 volumes:
   aai-mock-config:

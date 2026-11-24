@@ -1,0 +1,2 @@
+[ { "iss": "http://pando.upsc.se:3000/",
+    "jku": "http://pando.upsc.se:3000/api/jwk" } ]

@@ -18,7 +18,15 @@ mock-broker:
   jku: http://pando.upsc.se:8800/ga4gh-broker/jwk
   path-to-jwk-file: /etc/lsaai-mock/keys.jwks
   visa-configs-path: /etc/lsaai-mock/ga4gh-broker/users/
-  passport-repositories: []
+  passport-repositories:
+  - name: REMS
+      url: http://app:3000/api/permissions/{user_id}
+      jwks: http://app:3000/api/jwk
+      headers:
+        - header: x-rems-api-key
+          value: 633df860dc4fad6c77d7ba3e03cd15d3
+        - header: x-rems-user-id
+          value: robot
 # Sample configuration for repository
 #  passport-repositories:
 #  - name: REMS-LOCAL-API
